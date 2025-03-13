@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt
 import torch
 from torchvision import models, transforms
 from PIL import Image
+import S7
 
 # ImageNet 类别标签
 IMAGENET_CLASSES = [
@@ -108,15 +109,18 @@ class ImageClassifierApp(QWidget):
 
                 # 获取预测结果
                 _, predicted_idx = torch.max(output, 1)
-                predicted_idx = predicted_idx.item()
-                print("Predicted index:", predicted_idx)  # 应该是 0 到 999 之间的整数
+                self.predicted_idx = predicted_idx.item()
+                print("Predicted index:", self.predicted_idx)  # 应该是 0 到 999 之间的整数
 
-                if predicted_idx >= len(IMAGENET_CLASSES):
-                    print(f"Error: Predicted index {predicted_idx} is out of range.")
+                if self.predicted_idx >= len(IMAGENET_CLASSES):
+                    print(f"Error: Predicted index {self.predicted_idx} is out of range.")
                     self.result_label.setText('Error: Invalid prediction.')
                 else:
-                    predicted_label = IMAGENET_CLASSES[predicted_idx]
-                    self.result_label.setText(f'Predicted: {predicted_label}')
+                    self.predicted_label = IMAGENET_CLASSES[self.predicted_idx]
+                    self.result_label.setText(f'Predicted: {self.predicted_label}')
+                    distanceDataBlock = S7.write2PLC(PLC_IP = '192.168.0.211', db_number = 1, start = 0, distence = 677)
+                    distanceDataBlock.connectAndWrite()
+
             except Exception as e:
                 print(f"Error during image processing or inference: {e}")
                 self.result_label.setText('Error: Failed to classify image.')
