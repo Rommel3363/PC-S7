@@ -6,6 +6,7 @@ import torch
 from torchvision import models, transforms
 from PIL import Image
 import S7
+from loadConfig import LoadConfigDic
 
 # ImageNet 类别标签
 IMAGENET_CLASSES = [
@@ -23,10 +24,11 @@ IMAGENET_CLASSES = [
 
 
 class ImageClassifierApp(QWidget):
-    def __init__(self):
+    def __init__(self,config={}):
         super().__init__()
         self.initUI()
         self.load_model()
+        self.config = config
 
     def initUI(self):
         # 设置窗口标题和大小
@@ -118,7 +120,10 @@ class ImageClassifierApp(QWidget):
                 else:
                     self.predicted_label = IMAGENET_CLASSES[self.predicted_idx]
                     self.result_label.setText(f'Predicted: {self.predicted_label}')
-                    distanceDataBlock = S7.write2PLC(PLC_IP = '192.168.0.211', db_number = 1, start = 0, distence = 677)
+                    distanceDataBlock = S7.write2PLC(PLC_IP = self.config['PLC_IP'], 
+                                                     db_number = self.config['db_number'], 
+                                                     start = self.config['start'], 
+                                                     distence = self.config['IslandDistance']['Island1'])#todo，这里要改成不同文件名字对应不同距离,用一个变量来储存分类结果
                     distanceDataBlock.connectAndWrite()
 
             except Exception as e:
@@ -126,7 +131,9 @@ class ImageClassifierApp(QWidget):
                 self.result_label.setText('Error: Failed to classify image.')
 
 if __name__ == '__main__':
+    config = LoadConfigDic()
+    configDic = config.loadDIC()
     app = QApplication(sys.argv)
-    ex = ImageClassifierApp()
+    ex = ImageClassifierApp(configDic)
     ex.show()
     sys.exit(app.exec_())

@@ -1,0 +1,13 @@
+{
+    
+    "IslandDistance":{
+        "Island1":4396,
+        "Island2":677,
+        "Island3":2121,
+        "Island4":5678
+    },
+    "PLC_IP":"192.168.0.211",
+    "db_number":1,
+    "start":0
+
+}
