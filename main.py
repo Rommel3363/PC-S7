@@ -6,22 +6,8 @@ import torch
 from torchvision import models, transforms
 from PIL import Image
 import S7
+import classfy
 from loadConfig import LoadConfigDic
-
-# ImageNet 类别标签
-IMAGENET_CLASSES = [
-    'tench, Tinca tinca', 'goldfish, Carassius auratus', 'great white shark, white shark, man-eater, man-eating shark, Carcharodon carcharias',
-    'tiger shark, Galeocerdo cuvieri', 'hammerhead, hammerhead shark', 'electric ray, crampfish, numbfish, torpedo',
-    'stingray', 'cock', 'hen', 'ostrich, Struthio camelus', 'brambling, Fringilla montifringilla', 'goldfinch, Carduelis carduelis',
-    'house finch, linnet, Carpodacus mexicanus', 'junco, snowbird', 'indigo bunting, indigo finch, indigo bird, Passerina cyanea',
-    'robin, American robin, Turdus migratorius', 'bulbul', 'jay', 'magpie', 'chickadee', 'water ouzel, dipper', 'kite',
-    'bald eagle, American eagle, Haliaeetus leucocephalus', 'vulture', 'great grey owl, great gray owl, Strix nebulosa',
-    'European fire salamander, Salamandra salamandra', 'common newt, Triturus vulgaris', 'eft', 'spotted salamander, Ambystoma maculatum',
-    'axolotl, mud puppy, Ambystoma mexicanum', 'bullfrog, Rana catesbeiana', 'tree frog, tree-frog', 'tailed frog, bell toad, ribbed toad, tailed toad, Ascaphus trui',
-    'loggerhead, loggerhead turtle, Caretta caretta', 'leatherback turtle, leatherback, leathery turtle, Dermochelys coriacea',
-    'mud turtle', 'terrapin', 'box turtle, box tortoise', 'banded gecko', 'common iguana, iguana, Iguana iguana'
-]
-
 
 class ImageClassifierApp(QWidget):
     def __init__(self,config={}):
@@ -29,6 +15,9 @@ class ImageClassifierApp(QWidget):
         self.initUI()
         self.load_model()
         self.config = config
+        classfier = classfy.classfication(self.config['image_dir'],
+                                          self.config['image_num'])
+        
 
     def initUI(self):
         # 设置窗口标题和大小
@@ -110,21 +99,16 @@ class ImageClassifierApp(QWidget):
                     print("Model output shape:", output.shape)  # 应该是 [1, 1000]
 
                 # 获取预测结果
-                _, predicted_idx = torch.max(output, 1)
-                self.predicted_idx = predicted_idx.item()
+                self.predicted_idx = classfy.classfier.classfy(tiaoyitiao_dir = file_name)
                 print("Predicted index:", self.predicted_idx)  # 应该是 0 到 999 之间的整数
 
-                if self.predicted_idx >= len(IMAGENET_CLASSES):
-                    print(f"Error: Predicted index {self.predicted_idx} is out of range.")
-                    self.result_label.setText('Error: Invalid prediction.')
-                else:
-                    self.predicted_label = IMAGENET_CLASSES[self.predicted_idx]
-                    self.result_label.setText(f'Predicted: {self.predicted_label}')
-                    distanceDataBlock = S7.write2PLC(PLC_IP = self.config['PLC_IP'], 
-                                                     db_number = self.config['db_number'], 
-                                                     start = self.config['start'], 
-                                                     distence = self.config['IslandDistance']['Island1'])#todo，这里要改成不同文件名字对应不同距离,用一个变量来储存分类结果
-                    distanceDataBlock.connectAndWrite()
+                self.predicted_label = self.config['IslandName'][str(self.predicted_idx)]
+                self.result_label.setText(f'Predicted: {self.predicted_label}')
+                distanceDataBlock = S7.write2PLC(PLC_IP = self.config['PLC_IP'], 
+                                                    db_number = self.config['db_number'], 
+                                                    start = self.config['start'], 
+                                                    distence = self.config['IslandDistance'][self.predicted_label])
+                distanceDataBlock.connectAndWrite()
 
             except Exception as e:
                 print(f"Error during image processing or inference: {e}")

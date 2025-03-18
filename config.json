@@ -1,5 +1,10 @@
 {
-    
+    "IslandName":{
+        "1":"Island1",
+        "2":"Island2",
+        "3":"Island3",
+        "4":"Island4"
+    },
     "IslandDistance":{
         "Island1":4396,
         "Island2":677,
@@ -8,6 +13,8 @@
     },
     "PLC_IP":"192.168.0.211",
     "db_number":1,
-    "start":0
+    "start":0,
+    "image_dir" : "C:\Users\Administrator\Desktop",
+    "image_num" : 4
 
 }

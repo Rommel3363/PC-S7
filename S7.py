@@ -1,6 +1,6 @@
 import snap7
 from snap7.util import *
-import pyqt222
+import main
 import sys
 
 class write2PLC():
@@ -47,8 +47,8 @@ class write2PLC():
 
 
 if __name__ == '__main__':
-    app = pyqt222.QApplication(sys.argv)
-    ex = pyqt222.ImageClassifierApp()
+    app = main.QApplication(sys.argv)
+    ex = main.ImageClassifierApp()
     ex.show()
     # distanceDataBlock = write2PLC(PLC_IP = '192.168.0.211', db_number = 1, start = 0, distence = 114)
     # distanceDataBlock.connectAndWrite()
