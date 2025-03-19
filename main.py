@@ -11,12 +11,12 @@ from loadConfig import LoadConfigDic
 
 class ImageClassifierApp(QWidget):
     def __init__(self,config={}):
-        super().__init__()
-        self.initUI()
+        super().__init__()        
         self.load_model()
         self.config = config
-        classfier = classfy.classfication(self.config['image_dir'],
+        self.classifier = classfy.classfication(self.config['image_dir'],
                                           self.config['image_num'])
+        self.initUI()
         
 
     def initUI(self):
@@ -86,23 +86,11 @@ class ImageClassifierApp(QWidget):
                 pixmap = QPixmap(file_name)
                 self.image_label.setPixmap(pixmap.scaled(400, 400, Qt.KeepAspectRatio))  # 调整图片显示大小
 
-                # 分类图片
-                image = Image.open(file_name)
-                if image.mode != 'RGB':
-                    image = image.convert('RGB')
-                input_tensor = self.transform(image).unsqueeze(0)
-                print("Input tensor shape:", input_tensor.shape)  # 应该是 [1, 3, 224, 224]
-
-                # 模型推理
-                with torch.no_grad():
-                    output = self.model(input_tensor)
-                    print("Model output shape:", output.shape)  # 应该是 [1, 1000]
-
                 # 获取预测结果
-                self.predicted_idx = classfy.classfier.classfy(tiaoyitiao_dir = file_name)
+                self.predicted_idx = self.classifier.ExecuteClassfy(tiaoyitiao_dir = file_name)
                 print("Predicted index:", self.predicted_idx)  # 应该是 0 到 999 之间的整数
 
-                self.predicted_label = self.config['IslandName'][str(self.predicted_idx)]
+                self.predicted_label = self.config['IslandName'][str(self.predicted_idx)] #TODO, ERROR: Error during image processing or inference: 'module' object is not callable
                 self.result_label.setText(f'Predicted: {self.predicted_label}')
                 distanceDataBlock = S7.write2PLC(PLC_IP = self.config['PLC_IP'], 
                                                     db_number = self.config['db_number'], 
